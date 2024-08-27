@@ -1,7 +1,7 @@
 import { Controller, Get, Query, UseGuards } from "@nestjs/common";
-import { JwtAuthGuard } from "src/auth/jwt-auth.guard";
-import { ZodValidationPipe } from "src/pipes/zod-validation-pipe";
-import { PrismaService } from "src/prisma/prisma.service";
+import { JwtAuthGuard } from "@/auth/jwt-auth.guard";
+import { ZodValidationPipe } from "@/pipes/zod-validation-pipe";
+import { PrismaService } from "@/prisma/prisma.service";
 import { z } from "zod";
 
 //o pipe valida como se tudo que viesse antes fosse o real input. Entao ele verifica se o valor que vem de .string().optional().default("1").transform(Number) é um numero com no mínimo 1
@@ -25,7 +25,7 @@ export class FetchRecentQuestionsController {
     @Query("page", new ZodValidationPipe(pageQueryParamsSchema))
     page: PageQueryParamsSchema
   ) {
-    const perPage = 1;
+    const perPage = 20;
     const questions = await this.prisma.question.findMany({
       take: perPage,
       skip: (page - 1) * perPage,
@@ -34,6 +34,6 @@ export class FetchRecentQuestionsController {
       },
     });
 
-    return questions;
+    return { questions };
   }
 }
