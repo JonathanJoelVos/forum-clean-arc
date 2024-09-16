@@ -20,8 +20,8 @@ export class InMemoryQuestionsRepository implements QuestionsRepository {
     DomainEvents.dispatchEventsForAggregate(question.id);
   }
 
-  async findBySlug(slug: Slug) {
-    const question = this.items.find((item) => item.slug.value === slug.value);
+  async findBySlug(slug: string) {
+    const question = this.items.find((item) => item.slug.value === slug);
 
     if (!question) {
       return null;
