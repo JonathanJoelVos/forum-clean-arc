@@ -1,8 +1,13 @@
-import "dotenv/config";
+import { config } from "dotenv";
 
 import { PrismaClient } from "@prisma/client";
 import { execSync } from "child_process";
 import { randomUUID } from "crypto";
+
+//essa configuração faz com de se tem uma variavel de ambiente em env como por exemplo EXEMPLO=1 se tiver o mesmo nome em env.test EXEMPLO=2 a variavel é substituida pelo ultimo valor
+// usamos isso para mudar o bucket de prod para o bucket de test usando a variavel de ambiente AWS_BUCKET_NAME
+config({ path: ".env", override: true });
+config({ path: ".env.test", override: true });
 
 const prisma = new PrismaClient();
 

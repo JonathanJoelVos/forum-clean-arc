@@ -1,6 +1,6 @@
 import { InMemoryAnswersRepository } from "test/repositories/in-memory-answers-repository";
 import { makeAnswer } from "test/factories/make-answer";
-import { ListQuestionsAnswersUseCase } from "./list-question-answers";
+import { ListQuestionAnswersUseCase } from "./list-question-answers";
 import { InMemoryQuestionsRepository } from "test/repositories/in-memory-questions-repository";
 import { makeQuestion } from "test/factories/make-question";
 import { UniqueEntityID } from "@/core/entities/unique-entity-id";
@@ -12,7 +12,7 @@ let inMemoryAnswersRepository: InMemoryAnswersRepository;
 let inMemoryQuestionsRepository: InMemoryQuestionsRepository;
 let inMemoryQuestionAttachmentsRepository: InMemoryQuestionAttachmentsRepository;
 let inMemoryAnswerAttachmentsRepository: InMemoryAnswerAttachmentsRepository;
-let sut: ListQuestionsAnswersUseCase;
+let sut: ListQuestionAnswersUseCase;
 
 describe("Create Answer use case", () => {
   beforeEach(() => {
@@ -26,7 +26,7 @@ describe("Create Answer use case", () => {
     inMemoryQuestionsRepository = new InMemoryQuestionsRepository(
       inMemoryQuestionAttachmentsRepository
     );
-    sut = new ListQuestionsAnswersUseCase(
+    sut = new ListQuestionAnswersUseCase(
       inMemoryAnswersRepository,
       inMemoryQuestionsRepository
     );
