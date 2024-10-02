@@ -27,4 +27,27 @@ export class PrismaQuestionAttachmentsRepository
       },
     });
   }
+
+  async deleteMany(attachments: QuestionAttachment[]) {
+    const attachmentsId = attachments.map((attachments) =>
+      attachments.attachmentId.toString()
+    );
+
+    await this.prisma.attachment.deleteMany({
+      where: {
+        id: {
+          in: attachmentsId,
+        },
+      },
+    });
+  }
+
+  async saveMany(attachments: QuestionAttachment[]) {
+    if (attachments.length === 0) {
+      return;
+    }
+
+    const data = PrismaQuestionAttachmentMapper.toUpdateManyPrisma(attachments);
+    await this.prisma.attachment.updateMany(data);
+  }
 }

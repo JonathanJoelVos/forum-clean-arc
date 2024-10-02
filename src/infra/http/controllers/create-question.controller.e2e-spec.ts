@@ -5,6 +5,7 @@ import { INestApplication } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 import { Test } from "@nestjs/testing";
 import request from "supertest";
+import { AttachmentFactory } from "test/factories/make-attachment";
 import { QuestionFactory } from "test/factories/make-question";
 import { StudentFactory } from "test/factories/make-student";
 
@@ -13,17 +14,19 @@ describe("Create question", () => {
   let prisma: PrismaService;
   let jwt: JwtService;
   let studentFactory: StudentFactory;
+  let attachmentFactory: AttachmentFactory;
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
       imports: [AppModule, DatabaseModule],
-      providers: [StudentFactory],
+      providers: [StudentFactory, AttachmentFactory],
     }).compile();
 
     app = moduleRef.createNestApplication();
     prisma = moduleRef.get(PrismaService);
     jwt = moduleRef.get(JwtService);
     studentFactory = moduleRef.get(StudentFactory);
+    attachmentFactory = moduleRef.get(AttachmentFactory);
     await app.init();
   });
 
@@ -34,12 +37,16 @@ describe("Create question", () => {
       sub: user.id.toString(),
     });
 
+    const attachment1 = await attachmentFactory.makePrismaAttachment();
+    const attachment2 = await attachmentFactory.makePrismaAttachment();
+
     const response = await request(app.getHttpServer())
       .post("/questions")
       .set("Authorization", `Bearer ${accessToken}`)
       .send({
         title: "Titulo test",
         content: "Titulo test content",
+        attachmentsIds: [attachment1.id.toString(), attachment2.id.toString()],
       });
 
     expect(response.statusCode).toEqual(201);
@@ -50,5 +57,13 @@ describe("Create question", () => {
       },
     });
     expect(questionOnDatabase).toBeTruthy();
+
+    const attachmentsWithQuestionId = await prisma.attachment.findMany({
+      where: {
+        questionId: questionOnDatabase?.id,
+      },
+    });
+
+    expect(attachmentsWithQuestionId).toHaveLength(2);
   });
 });

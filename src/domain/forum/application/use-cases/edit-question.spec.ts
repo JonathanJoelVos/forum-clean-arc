@@ -67,6 +67,45 @@ describe("Edit Question use case", () => {
       }),
     ]);
   });
+  it("should sync new and removed attachements when editing a question", async () => {
+    const question = makeQuestion({});
+
+    await inMemoryQuestionsRepository.save(question);
+
+    inMemoryQuestionAttachmentsRepository.items.push(
+      makeQuestionAttachment({
+        attachmentId: new UniqueEntityID("1"),
+        questionId: question.id,
+      })
+    );
+    inMemoryQuestionAttachmentsRepository.items.push(
+      makeQuestionAttachment({
+        attachmentId: new UniqueEntityID("2"),
+        questionId: question.id,
+      })
+    );
+
+    const result = await sut.execute({
+      authorId: question.authorId.toString(),
+      questionId: question.id.toString(),
+      content: "new content",
+      title: "new title",
+      attachementsIds: ["1", "3"],
+    });
+
+    expect(result.isRight()).toBeTruthy();
+    expect(inMemoryQuestionAttachmentsRepository.items).toHaveLength(2);
+    expect(inMemoryQuestionAttachmentsRepository.items).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          attachmentId: new UniqueEntityID("1"),
+        }),
+        expect.objectContaining({
+          attachmentId: new UniqueEntityID("3"),
+        }),
+      ])
+    );
+  });
   it("should not be able to edit a question from another user", async () => {
     const question = makeQuestion({
       authorId: new UniqueEntityID("author-1"),

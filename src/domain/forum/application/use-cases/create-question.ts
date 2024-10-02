@@ -45,7 +45,7 @@ export class CreateQuestionUseCase {
 
     question.attachments = new QuestionAttachmentList(questionAttachments);
 
-    this.questionsRepository.save(question);
+    await this.questionsRepository.save(question);
 
     return right({
       question,
