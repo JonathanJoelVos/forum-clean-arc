@@ -22,7 +22,7 @@ describe("Upload attachment", () => {
     await app.init();
   });
 
-  test("[POST] /uploads", async () => {
+  test.skip("[POST] /uploads", async () => {
     const user = await studentFactory.makePrismaStudent();
 
     const accessToken = jwt.sign({

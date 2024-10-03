@@ -10,6 +10,7 @@ import { z } from "zod";
 import { AnswerPresenter } from "../presenters/answer-presentes";
 import { ListQuestionCommentsUseCase } from "@/domain/forum/application/use-cases/list-question-comments";
 import { CommentPresenter } from "../presenters/comment-presenter";
+import { CommentWithAuthorPresenter } from "../presenters/comment-with-author-presentes";
 
 const pageQueryParamsSchema = z
   .string()
@@ -38,9 +39,9 @@ export class ListQuestionCommentsController {
     if (result.isLeft()) {
       throw new BadRequestException();
     }
-    const questionComments = result.value.questionComments;
+    const comments = result.value.comments;
     return {
-      comments: questionComments.map(CommentPresenter.toHttp),
+      comments: comments.map(CommentWithAuthorPresenter.toHttp),
     };
   }
 }
