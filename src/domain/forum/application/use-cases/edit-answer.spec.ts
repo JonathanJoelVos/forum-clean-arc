@@ -5,6 +5,7 @@ import { UniqueEntityID } from "@/core/entities/unique-entity-id";
 import { NotAllowedError } from "./errors/not-allowed-error";
 import { InMemoryAnswerAttachmentsRepository } from "test/repositories/in-memory-answer-attachments-repository";
 import { makeAnswerAttachment } from "test/factories/make-answer-attachment";
+import { makeQuestion } from "test/factories/make-question";
 
 let inMemoryAnswersRepository: InMemoryAnswersRepository;
 let inMemoryAnswerAttachmentsRepository: InMemoryAnswerAttachmentsRepository;
@@ -78,5 +79,49 @@ describe("Edit Answer use case", () => {
 
     expect(result.isLeft()).toBe(true);
     expect(result.value).toBeInstanceOf(NotAllowedError);
+  });
+
+  it("should sync new and removed attachements when editing a question", async () => {
+    const question = makeQuestion();
+    const answer = makeAnswer({
+      questionId: question.id,
+    });
+
+    inMemoryAnswersRepository.save(answer);
+
+    inMemoryAnswerAttachmentsRepository.items.push(
+      makeAnswerAttachment({
+        answerId: answer.id,
+        attachmentId: new UniqueEntityID("1"),
+      })
+    );
+    inMemoryAnswerAttachmentsRepository.items.push(
+      makeAnswerAttachment({
+        answerId: answer.id,
+        attachmentId: new UniqueEntityID("2"),
+      })
+    );
+
+    const result = await sut.execute({
+      answerId: answer.id.toString(),
+      authorId: answer.authorId.toString(),
+      content: "Edit",
+      attachmentsIds: ["1", "3"],
+    });
+
+    expect(result.isRight()).toBeTruthy();
+    if (result.isRight()) {
+      expect(inMemoryAnswerAttachmentsRepository.items).toHaveLength(2);
+      expect(inMemoryAnswerAttachmentsRepository.items).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            attachmentId: new UniqueEntityID("1"),
+          }),
+          expect.objectContaining({
+            attachmentId: new UniqueEntityID("3"),
+          }),
+        ])
+      );
+    }
   });
 });

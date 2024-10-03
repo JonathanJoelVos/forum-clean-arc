@@ -12,9 +12,7 @@ export class InMemoryAnswersRepository implements AnswersRepository {
   ) {}
   async save(answer: Answer) {
     this.items.push(answer);
-    this.answerAttachmentsRepository.createMany(
-      answer.attachments.currentItems
-    );
+    this.answerAttachmentsRepository.saveMany(answer.attachments.getItems());
     DomainEvents.dispatchEventsForAggregate(answer.id);
   }
 
@@ -39,6 +37,12 @@ export class InMemoryAnswersRepository implements AnswersRepository {
     );
 
     this.items[index] = answer;
+
+    this.answerAttachmentsRepository.saveMany(answer.attachments.getNewItems());
+
+    this.answerAttachmentsRepository.deleteMany(
+      answer.attachments.getRemovedItems()
+    );
     DomainEvents.dispatchEventsForAggregate(answer.id);
   }
 
