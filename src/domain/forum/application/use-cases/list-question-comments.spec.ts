@@ -8,14 +8,18 @@ import { ResourceNotFoundError } from "./errors/resource-not-found-error";
 import { InMemoryQuestionAttachmentsRepository } from "test/repositories/in-memory-question-attachments-repository";
 import { InMemoryStudentsRepository } from "test/repositories/in-memory-students-repository";
 import { makeStudent } from "test/factories/make-student";
+import { InMemoryAttachmentsRepository } from "test/repositories/in-memory-attachments-repository";
 
 let inMemoryQuestionCommentsRepository: InMemoryQuestionCommentsRepository;
 let inMemoryQuestionsRepository: InMemoryQuestionsRepository;
+let inMemoryAttachmentsRepository: InMemoryAttachmentsRepository;
 let inMemoryStudentsRepository: InMemoryStudentsRepository;
+
 let sut: ListQuestionCommentsUseCase;
 
 describe("Create Answer use case", () => {
   beforeEach(() => {
+    inMemoryAttachmentsRepository = new InMemoryAttachmentsRepository();
     const inMemoryQuestionAttachmentsRepository =
       new InMemoryQuestionAttachmentsRepository();
     inMemoryStudentsRepository = new InMemoryStudentsRepository();
@@ -23,7 +27,9 @@ describe("Create Answer use case", () => {
       inMemoryStudentsRepository
     );
     inMemoryQuestionsRepository = new InMemoryQuestionsRepository(
-      inMemoryQuestionAttachmentsRepository
+      inMemoryQuestionAttachmentsRepository,
+      inMemoryAttachmentsRepository,
+      inMemoryStudentsRepository
     );
     sut = new ListQuestionCommentsUseCase(
       inMemoryQuestionsRepository,

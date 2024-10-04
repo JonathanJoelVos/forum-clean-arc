@@ -3,13 +3,19 @@ import { DeleteAnswerCommentUseCase } from "./delete-answer-comment";
 import { InMemoryAnswerCommentsRepository } from "test/repositories/in-memory-answer-comments-repository";
 import { makeAnswerComment } from "test/factories/make-answer-comment";
 import { NotAllowedError } from "./errors/not-allowed-error";
+import { InMemoryAttachmentsRepository } from "test/repositories/in-memory-attachments-repository";
+import { InMemoryStudentsRepository } from "test/repositories/in-memory-students-repository";
 
 let inMemoryAnswerCommentsRepository: InMemoryAnswerCommentsRepository;
 let sut: DeleteAnswerCommentUseCase;
+let inMemoryStudentsRepository: InMemoryStudentsRepository;
 
 describe("Delete AnswerComment use case", () => {
   beforeEach(() => {
-    inMemoryAnswerCommentsRepository = new InMemoryAnswerCommentsRepository();
+    inMemoryStudentsRepository = new InMemoryStudentsRepository();
+    inMemoryAnswerCommentsRepository = new InMemoryAnswerCommentsRepository(
+      inMemoryStudentsRepository
+    );
     sut = new DeleteAnswerCommentUseCase(inMemoryAnswerCommentsRepository);
   });
   it("should be able to delete an answer comment", async () => {

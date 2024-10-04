@@ -1,20 +1,20 @@
 export function waitFor(
-  assertions: () => void,
-  maxDuration = 1000,
+  assertions: () => void | Promise<any>,
+  maxDuration = 1000
 ): Promise<void> {
   return new Promise((resolve, reject) => {
-    let elapsedTime = 0
-    const interval = setInterval(() => {
-      elapsedTime += 10
+    let elapsedTime = 0;
+    const interval = setInterval(async () => {
+      elapsedTime += 10;
       try {
-        assertions()
-        clearInterval(interval)
-        resolve()
+        await assertions();
+        clearInterval(interval);
+        resolve();
       } catch (error) {
         if (elapsedTime >= maxDuration) {
-          reject(error)
+          reject(error);
         }
       }
-    }, 10)
-  })
+    }, 10);
+  });
 }

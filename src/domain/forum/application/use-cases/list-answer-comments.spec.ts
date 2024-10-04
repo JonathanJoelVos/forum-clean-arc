@@ -6,15 +6,21 @@ import { InMemoryAnswersRepository } from "test/repositories/in-memory-answers-r
 import { makeAnswer } from "test/factories/make-answer";
 import { ResourceNotFoundError } from "./errors/resource-not-found-error";
 import { InMemoryAnswerAttachmentsRepository } from "test/repositories/in-memory-answer-attachments-repository";
+import { InMemoryStudentsRepository } from "test/repositories/in-memory-students-repository";
+import { makeStudent } from "test/factories/make-student";
 
 let inMemoryAnswerCommentsRepository: InMemoryAnswerCommentsRepository;
 let inMemoryAnswersRepository: InMemoryAnswersRepository;
 let inMemoryAnswerAttachmentsRepository: InMemoryAnswerAttachmentsRepository;
+let inMemoryStudentsRepository: InMemoryStudentsRepository;
 let sut: ListAnswerCommentsUseCase;
 
 describe("Create Answer use case", () => {
   beforeEach(() => {
-    inMemoryAnswerCommentsRepository = new InMemoryAnswerCommentsRepository();
+    inMemoryStudentsRepository = new InMemoryStudentsRepository();
+    inMemoryAnswerCommentsRepository = new InMemoryAnswerCommentsRepository(
+      inMemoryStudentsRepository
+    );
     inMemoryAnswerAttachmentsRepository =
       new InMemoryAnswerAttachmentsRepository();
     inMemoryAnswersRepository = new InMemoryAnswersRepository(
@@ -26,24 +32,34 @@ describe("Create Answer use case", () => {
     );
   });
   it("should be able to list recents answers", async () => {
-    const answer = makeAnswer({}, new UniqueEntityID("answer-1"));
+    const author = makeStudent({
+      name: "Jojo",
+    });
+    const answer = makeAnswer(
+      {
+        authorId: author.id,
+      },
+      new UniqueEntityID("answer-1")
+    );
     inMemoryAnswersRepository.save(answer);
+    inMemoryStudentsRepository.save(author);
 
-    inMemoryAnswerCommentsRepository.save(
-      makeAnswerComment({
-        answerId: answer.id,
-      })
-    );
-    inMemoryAnswerCommentsRepository.save(
-      makeAnswerComment({
-        answerId: answer.id,
-      })
-    );
-    inMemoryAnswerCommentsRepository.save(
-      makeAnswerComment({
-        answerId: answer.id,
-      })
-    );
+    const comment1 = makeAnswerComment({
+      answerId: answer.id,
+      authorId: author.id,
+    });
+    const comment2 = makeAnswerComment({
+      answerId: answer.id,
+      authorId: author.id,
+    });
+    const comment3 = makeAnswerComment({
+      answerId: answer.id,
+      authorId: author.id,
+    });
+
+    inMemoryAnswerCommentsRepository.save(comment1);
+    inMemoryAnswerCommentsRepository.save(comment2);
+    inMemoryAnswerCommentsRepository.save(comment3);
 
     const result = await sut.execute({
       answerId: answer.id.toString(),
@@ -52,17 +68,38 @@ describe("Create Answer use case", () => {
 
     expect(result.isRight()).toBe(true);
     if (result.isRight()) {
-      expect(result.value.answerComments).toHaveLength(3);
+      expect(result.value.comments).toHaveLength(3);
+      expect(result.value.comments).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            author: "Jojo",
+            commentId: comment1.id,
+          }),
+          expect.objectContaining({
+            author: "Jojo",
+            commentId: comment2.id,
+          }),
+          expect.objectContaining({
+            author: "Jojo",
+            commentId: comment3.id,
+          }),
+        ])
+      );
     }
   });
   it("should be able to list paginated recents answers", async () => {
+    const author = makeStudent({
+      name: "Jojo",
+    });
     const answer = makeAnswer({}, new UniqueEntityID("answer-1"));
+    inMemoryStudentsRepository.save(author);
     inMemoryAnswersRepository.save(answer);
 
     for (let i = 0; i < 22; i++) {
       inMemoryAnswerCommentsRepository.save(
         makeAnswerComment({
           answerId: answer.id,
+          authorId: author.id,
         })
       );
     }
@@ -74,7 +111,7 @@ describe("Create Answer use case", () => {
 
     expect(result.isRight()).toBe(true);
     if (result.isRight()) {
-      expect(result.value.answerComments).toHaveLength(2);
+      expect(result.value.comments).toHaveLength(2);
     }
   });
   it("not should be able to list recents answers with not exists answer", async () => {

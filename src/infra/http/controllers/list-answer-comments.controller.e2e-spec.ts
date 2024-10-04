@@ -37,7 +37,9 @@ describe("List Answer comment ", async () => {
   });
 
   test("[GET] /answers/:answerId/comments", async () => {
-    const user = await studentFactory.makePrismaStudent();
+    const user = await studentFactory.makePrismaStudent({
+      name: "Jojo",
+    });
     const accessToken = jwt.sign({
       sub: user.id.toString(),
     });
@@ -74,8 +76,8 @@ describe("List Answer comment ", async () => {
     expect(response.statusCode).equal(200);
     expect(response.body).toEqual({
       comments: expect.arrayContaining([
-        expect.objectContaining({ content: "Comment 01" }),
-        expect.objectContaining({ content: "Comment 02" }),
+        expect.objectContaining({ content: "Comment 01", authorName: "Jojo" }),
+        expect.objectContaining({ content: "Comment 02", authorName: "Jojo" }),
       ]),
     });
   });

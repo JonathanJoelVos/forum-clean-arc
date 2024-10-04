@@ -29,7 +29,7 @@ describe("Edit Question use case", () => {
   });
   it("should not be able to edit a question from another user", async () => {
     const notification = makeNotification({
-      recipentId: new UniqueEntityID("recipient-1"),
+      recipientId: new UniqueEntityID("recipient-1"),
     });
 
     await inMemoryNotificationsRepository.save(notification);

@@ -5,6 +5,9 @@ import { Injectable } from "@nestjs/common";
 import { PrismaService } from "../prisma.service";
 import { PrismaQuestionMapper } from "../mappers/prisma-question-mapper";
 import { QuestionAttachmentsRepository } from "@/domain/forum/application/repositories/question-attachments-repository";
+import { QuestionDetails } from "@/domain/forum/enterprise/entities/value-objects/question-details";
+import { PrismaQuestionDetailsMapper } from "../mappers/prisma-question-details-mapper";
+import { DomainEvents } from "@/core/events/domain-events";
 @Injectable()
 export class PrismaQuestionsRepository implements QuestionsRepository {
   constructor(
@@ -19,6 +22,7 @@ export class PrismaQuestionsRepository implements QuestionsRepository {
     await this.questionAttachmentsRepository.saveMany(
       question.attachments.getItems()
     );
+    DomainEvents.dispatchEventsForAggregate(question.id);
   }
   async delete(question: Question) {
     const data = PrismaQuestionMapper.toPrisma(question);
@@ -48,6 +52,7 @@ export class PrismaQuestionsRepository implements QuestionsRepository {
         question.attachments.getRemovedItems()
       ),
     ]);
+    DomainEvents.dispatchEventsForAggregate(question.id);
   }
   async findBySlug(slug: string): Promise<Question | null> {
     const question = await this.prisma.question.findUnique({
@@ -62,6 +67,25 @@ export class PrismaQuestionsRepository implements QuestionsRepository {
 
     return PrismaQuestionMapper.toDomain(question);
   }
+
+  async findDetailsBySlug(slug: string): Promise<QuestionDetails | null> {
+    const questionDetails = await this.prisma.question.findUnique({
+      where: {
+        slug,
+      },
+      include: {
+        author: true,
+        attachments: true,
+      },
+    });
+
+    if (!questionDetails) {
+      return null;
+    }
+
+    return PrismaQuestionDetailsMapper.toDomain(questionDetails);
+  }
+
   async findById(id: string): Promise<Question | null> {
     const question = await this.prisma.question.findUnique({
       where: {

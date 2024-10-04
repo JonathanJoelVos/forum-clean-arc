@@ -5,6 +5,7 @@ import { Injectable } from "@nestjs/common";
 import { PrismaAnswerMapper } from "../mappers/prisma-answer-mapper";
 import { PrismaService } from "../prisma.service";
 import { AnswerAttachmentsRepository } from "@/domain/forum/application/repositories/answer-attachments-repository";
+import { DomainEvents } from "@/core/events/domain-events";
 @Injectable()
 export class PrismaAnswersRepository implements AnswersRepository {
   constructor(
@@ -20,6 +21,8 @@ export class PrismaAnswersRepository implements AnswersRepository {
     await this.answerAttachmentsRepository.saveMany(
       answer.attachments.getItems()
     );
+
+    DomainEvents.dispatchEventsForAggregate(answer.id);
   }
   async delete(answer: Answer): Promise<void> {
     await this.prisma.answer.delete({
@@ -57,6 +60,8 @@ export class PrismaAnswersRepository implements AnswersRepository {
         answer.attachments.getNewItems()
       ),
     ]);
+
+    DomainEvents.dispatchEventsForAggregate(answer.id);
   }
   async findManyByQuestionId(
     questionId: string,

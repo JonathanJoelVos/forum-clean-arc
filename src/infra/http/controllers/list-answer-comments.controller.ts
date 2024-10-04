@@ -9,6 +9,7 @@ import { ZodValidationPipe } from "@/infra/http/pipes/zod-validation-pipe";
 import { z } from "zod";
 import { ListAnswerCommentsUseCase } from "@/domain/forum/application/use-cases/list-answer-comments";
 import { CommentPresenter } from "../presenters/comment-presenter";
+import { CommentWithAuthorPresenter } from "../presenters/comment-with-author-presentes";
 
 const pageQueryParamsSchema = z
   .string()
@@ -37,9 +38,9 @@ export class ListAnswerCommentsController {
     if (result.isLeft()) {
       throw new BadRequestException();
     }
-    const answerComments = result.value.answerComments;
+    const comments = result.value.comments;
     return {
-      comments: answerComments.map(CommentPresenter.toHttp),
+      comments: comments.map(CommentWithAuthorPresenter.toHttp),
     };
   }
 }

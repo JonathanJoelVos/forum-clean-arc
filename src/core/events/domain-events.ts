@@ -8,6 +8,8 @@ export class DomainEvents {
   private static handlersMap: Record<string, DomainEventCallback[]> = {};
   private static markedAggregates: AggregateRoot<unknown>[] = [];
 
+  public static shouldRun = true;
+
   public static register(
     eventClassName: string,
     callback: DomainEventCallback
@@ -60,6 +62,12 @@ export class DomainEvents {
   private static dispatch(event: DomainEvent) {
     const eventClassName = event.constructor.name;
     const isEventRegistered = eventClassName in this.handlersMap;
+
+    // Não dispara o evento se definirmos que os dominios não devem disparar com DomainEvents.shouldRun = false
+    // Desabilitamos nos testes e2e pra não ficar disparando
+    if (!this.shouldRun) {
+      return;
+    }
 
     if (isEventRegistered) {
       const handlers = this.handlersMap[eventClassName];
